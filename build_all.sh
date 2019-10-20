@@ -81,4 +81,3 @@ cp *.go $OUT/src
 cd $OUT
 rm *.zip
 zip -r $OUTNAME .
-
