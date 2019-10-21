@@ -60,26 +60,30 @@ rungo() {
 	shift
 	echo "[$OS, $ARCH, $ARM]": "$@"
 #	docker run --rm -v $PWD:/usr/src/myapp -w /usr/src/myapp -u $(id -u):$(id -g) -e GOOS=$OS -e GOARCH=$ARCH -e GOARM=$ARM $VERSION go "$@"
+
+	echo "GOOS=$OS GOARCH=$ARCH GOARM=$ARM go \"$@\""
 	GOOS=$OS GOARCH=$ARCH GOARM=$ARM go "$@"
 }
 
 
-for v in ${ARCHS[@]}; do
-	startgo $v build -o $OUT/server-$v.elf -ldflags "$LDFLAGS" -gcflags "$GCFLAGS" .
-	#go-$v build -o $OUT/server-$v.elf -ldflags "$LDFLAGS" -gcflags "$GCFLAGS" .
-done
+# for v in ${ARCHS[@]}; do
+# 	startgo $v build -o $OUT/server-$v.elf -ldflags "$LDFLAGS" -gcflags "$GCFLAGS" .
+# 	#go-$v build -o $OUT/server-$v.elf -ldflags "$LDFLAGS" -gcflags "$GCFLAGS" .
+# done
+# build a linux server
 
-mv $OUT/server-win32.elf $OUT/server-win32.exe
-mv $OUT/server-win64.elf $OUT/server-win64.exe
-mv $OUT/server-x64.elf $OUT/server-linux-amd64.elf
-mv $OUT/server-arm7.elf $OUT/server-linux-arm7.elf
+echo "GOOS=linux go build -o ./output/server_linux ."
+GOOS=linux go build -o ./output/server_linux .
+
+# mv $OUT/server-win32.elf $OUT/server-win32.exe
+# mv $OUT/server-win64.elf $OUT/server-win64.exe
+# mv $OUT/server-x64.elf $OUT/server-linux-amd64.elf
+# mv $OUT/server-arm7.elf $OUT/server-linux-arm7.elf
 
 cp robot.txt start-sdgo.bat extra.txt robot-all.txt egg.txt $OUT
-cp LICENSE.txt README.md $OUT
-mkdir -p $OUT/src
-cp *.go $OUT/src
+# cp LICENSE.txt README.md $OUT
 
-cd $OUT
-rm *.zip
-zip -r $OUTNAME .
-
+# don't need to zip for now
+# cd $OUT
+# rm *.zip
+# zip -r $OUTNAME .
