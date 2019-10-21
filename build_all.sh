@@ -1,7 +1,8 @@
 #!/bin/bash
 
 
-VERSION=`date -u +%Y%m%d%H%M`
+# VERSION=`date -u +%Y%m%d%H%M`
+VERSION="c0.01"
 
 OUT="./output"
 OUTNAME="SDGO-Npage-$VERSION.zip"
