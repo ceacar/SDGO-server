@@ -1,0 +1,2 @@
+export PS1="SDGO $PS1"
+export GOPATH=$PWD
