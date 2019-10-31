@@ -186,7 +186,7 @@ func handleUser(p1 *Client, buffer []byte) {
 		case 0x0740: // 初始訊息? 出擊機體
 			// [0740][0006][03F0]06 00 F0 03 40 07 00 00 00 00
 			garage_message := p1.GetInfo1Bytes()
-			p1.RespondFrame("[0x0740 garage_page]", p1.GetInfo1Bytes())
+			p1.RespondFrame("[0x0740 garage_page]", garage_message)
 
 		case 0x07E8:
 			// [E8][0006][03F0]06 00 F0 03 E8 07 00 00 00 00
