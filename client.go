@@ -11,23 +11,23 @@ import (
 
 type Client struct {
 	net.Conn
-	rmx         sync.Mutex
-	wmx         sync.Mutex
+	rmx sync.Mutex
+	wmx sync.Mutex
 
 	*Grid
-	dirty       chan struct{} // update cached buffer
-	die         chan struct{} // client disconnect
+	dirty chan struct{} // update cached buffer
+	die   chan struct{} // client disconnect
 
-	debugPipe   net.Conn
-	debug       bool
+	debugPipe net.Conn
+	debug     bool
 }
 
-func NewClient(p1 net.Conn, user *Grid) (*Client) {
+func NewClient(p1 net.Conn, user *Grid) *Client {
 	c := &Client{
-		Grid: user,
-		Conn: p1,
+		Grid:  user,
+		Conn:  p1,
 		dirty: make(chan struct{}, 1),
-		die: make(chan struct{}),
+		die:   make(chan struct{}),
 	}
 	go c.worker()
 
@@ -36,7 +36,7 @@ func NewClient(p1 net.Conn, user *Grid) (*Client) {
 		c.debugPipe = tx
 		c.debug = true
 
-		go func (p1 net.Conn) {
+		go func(p1 net.Conn) {
 			buffer := make([]byte, (1<<16)+headerSize)
 
 			for {
@@ -68,12 +68,23 @@ func (c *Client) Write(buff []byte) (int, error) {
 	return c.Conn.Write(buff)
 }
 
+func (c *Client) Respond(typ string, buff []byte) (int, error) {
+	Vln(4, typ, heartReply)
+	return c.Write(buff)
+}
+
 func (c *Client) ReadFrame(buffer []byte) (f Frame, err error) {
 	c.rmx.Lock()
 	defer c.rmx.Unlock()
 	return readFrame(c.Conn, buffer)
 }
 
+func (c *Client) RespondRawFrame(typeStr string, dataHex string) (n int, err error) {
+	//c.wmx.Lock()
+	//defer c.wmx.Unlock()
+	Vln(4, typeStr, dataHex)
+	return c.WriteRawFrame(dataHex)
+}
 
 func (c *Client) WriteRawFrame(dataHex string) (n int, err error) {
 	//c.wmx.Lock()
@@ -81,7 +92,16 @@ func (c *Client) WriteRawFrame(dataHex string) (n int, err error) {
 	return writeRawFrame(c, dataHex)
 }
 
+func (c *Client) RespondFrame(typ string, data []byte) (n int, err error) {
+	// this writes the bytes into hex with little endian and then write to socket
+	//c.wmx.Lock()
+	//defer c.wmx.Unlock()
+	Vln(4, typ, data)
+	return c.WriteFrame(data)
+}
+
 func (c *Client) WriteFrame(data []byte) (n int, err error) {
+	// this writes the bytes into hex with little endian and then write to socket
 	//c.wmx.Lock()
 	//defer c.wmx.Unlock()
 	return writeFrame(c, data)
@@ -111,7 +131,7 @@ func (c *Client) worker() {
 	}
 }
 
-func (c *Client) Close() (error) {
+func (c *Client) Close() error {
 	select {
 	case <-c.die:
 		return nil
